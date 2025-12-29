@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ckad
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blue-deployment
+  namespace: ckad
+spec:
+  replicas: 3
+  strategy:
+    type: "RollingUpdate"
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: webapp
+      track: blue
+  template:
+    metadata:
+      labels:
+        app: webapp
+        track: blue
+    spec:
+      containers:
+        - name: webapp
+          image: nginx:1.16
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ckad
+  name: webapp-svc
+spec:
+  selector:
+    app: webapp
+    track: blue
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: green-deployment
+  namespace: ckad
+spec:
+  replicas: 3
+  strategy:
+    type: "RollingUpdate"
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: webapp
+      track: green
+  template:
+    metadata:
+      labels:
+        app: webapp
+        track: green
+    spec:
+      containers:
+        - name: webapp
+          image: nginx:1.17
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ckad
+  name: webapp-preview
+spec:
+  selector:
+    app: webapp
+    track: green
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+  type: ClusterIP
