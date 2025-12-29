@@ -1,5 +1,6 @@
 Preparing for Application Deployment (20%) section.
 
+## Bare minimum
 blue/green deployment scenario using only Deployment and Service k8s resources.
 
 1. Apply the whole file: `kubectl apply -n ckad -f blue-green.yaml`
@@ -10,3 +11,10 @@ blue/green deployment scenario using only Deployment and Service k8s resources.
 4. Check to which Pods the `webapp-svc` is now pointing: `kubectl -n ckad get endpoints webapp-svc`
 5. Switch label of `webapp-svc` selector back to `blue`, apply: `kubectl apply -n ckad -f blue-green.yaml`
 6. Check to which Pods the `webapp-svc` is now pointing: `kubectl -n ckad get endpoints webapp-svc`
+   
+## Ingress
+Deploy the `blue-green.yaml` in it's initial state and create `Ingress` resource to point to one of the Services.
+To enable ingress controller on minikube, type `minikube addons enable ingress`.
+
+Then, create Ingress resource:
+`k create ingress bluegreen --rule="webapp.ckad.local/*=webapp-svc:80" --rule="preview.ckad.local/*=webapp-preview:80" -n ckad --class=nginx`
