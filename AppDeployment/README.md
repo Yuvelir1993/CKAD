@@ -33,8 +33,8 @@ Increase traffic to canary by changing `replicas` number to higher in `canary-de
 ### Ingress
 Practicing [ingress nginx with weighting traffic](https://kubernetes.github.io/ingress-nginx/examples/canary/).
 
-Apply `canary-ingress.yaml`
-Create Ingress resources. First, create Ingress for a stable traffic:
+Apply `canary-ingress.yaml`, then create 2 ingresses to manage splitting traffic from the same URL.
+First, create Ingress for a stable traffic:
 ```bash
 kubectl -n ckad-canary-ingress create ingress canary-stable \
   --class=nginx \
