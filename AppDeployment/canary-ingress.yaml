@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ckad-canary-ingress
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stable-deployment
+  namespace: ckad-canary-ingress
+spec:
+  replicas: 3
+  strategy:
+    type: "RollingUpdate"
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: webapp
+      model: canary
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: webapp
+        model: canary
+        track: stable
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.16
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: canary-deployment
+  namespace: ckad-canary-ingress
+spec:
+  replicas: 1
+  strategy:
+    type: "RollingUpdate"
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: webapp
+      model: canary
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: webapp
+        model: canary
+        track: canary
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.17
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ckad-canary-ingress
+  name: svc-stable
+spec:
+  selector:
+    app: webapp
+    model: canary
+    track: stable
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+  type: "ClusterIP"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ckad-canary-ingress
+  name: svc-canary
+spec:
+  selector:
+    app: webapp
+    model: canary
+    track: canary
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+  type: "ClusterIP"
