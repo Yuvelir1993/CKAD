@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ckad-probes
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: ckad-probes
+  name: probes
+spec:
+  containers:
+    - name: test
+      image: alpine:latest
+      command: ["sh", "-c"]
+      args:
+        - |
+          sleep 6
+          touch /tmp/startup
+
+          sleep 6
+          touch /tmp/readiness
+          touch /tmp/liveness
+
+          while true; do
+            rm -f /tmp/liveness
+            sleep 6
+            touch /tmp/liveness
+            sleep 20
+          done
+      startupProbe:
+        exec:
+          command: ["sh", "-c", "test -f /tmp/startup"]
+        periodSeconds: 3
+        failureThreshold: 10
+      readinessProbe:
+        exec:
+          command: ["sh", "-c", "test -f /tmp/readiness"]
+        initialDelaySeconds: 1
+        periodSeconds: 1
+        failureThreshold: 5
+        successThreshold: 2
+      livenessProbe:
+        exec:
+          command: ["sh", "-c", "test -f /tmp/liveness"]
+        initialDelaySeconds: 1
+        periodSeconds: 2
+        failureThreshold: 10
